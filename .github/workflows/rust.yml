@@ -11,10 +11,8 @@ env:
 
 jobs:
   build:
-
     runs-on: windows-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: cargo build --verbose
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --verbose
