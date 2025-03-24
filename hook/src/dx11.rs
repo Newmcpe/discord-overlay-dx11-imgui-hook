@@ -77,11 +77,8 @@ pub unsafe extern "system" fn hk_present(
         let window = utils::interop::desc(this).OutputWindow;
 
         let wnd_proc: WNDPROC = unsafe {
-            let wnd_proc = WindowsAndMessaging::SetWindowLongPtrW(
-                window,
-                GWLP_WNDPROC,
-                wnd_proc_proxy as usize as isize,
-            );
+            let wnd_proc =
+                SetWindowLongPtrW(window, GWLP_WNDPROC, wnd_proc_proxy as usize as isize);
 
             transmute(wnd_proc)
         };
