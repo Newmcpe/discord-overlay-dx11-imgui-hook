@@ -1,3 +1,11 @@
 [workspace]
-members = ["hook"]
+members = ["hook", "egui-directx11", "egui-win32"]
 resolver = "2"
+
+[workspace.dependencies]
+windows = "0.61.1"
+egui = "0.22.0"
+
+# My blessed decisions.
+thiserror = "1.0.40"
+tracing = "0.1.37"

@@ -1,19 +1,30 @@
 #![allow(unsafe_op_in_unsafe_fn)]
 mod dx11;
-mod utils;
 
 use crate::dx11::ORIGINAL_PRESENT;
 use minhook::MinHook;
+use once_cell::sync::OnceCell;
 use std::ffi::c_void;
 use std::panic::set_hook;
-use windows::Win32::Foundation::HINSTANCE;
 use windows::Win32::System::Console::{AllocConsole, FreeConsole};
 use windows::Win32::System::SystemServices::{DLL_PROCESS_ATTACH, DLL_PROCESS_DETACH};
 use windows::Win32::System::Threading::Sleep;
 use windows::core::BOOL;
+use windows::core::imp::{FreeLibrary, HMODULE};
+
+//yes i know this is a bad way to do it but i'm lazy
+#[derive(Debug)]
+struct ThreadSafeHMODULE(HMODULE);
+unsafe impl Send for ThreadSafeHMODULE {}
+unsafe impl Sync for ThreadSafeHMODULE {}
+static HMODULE: OnceCell<Option<ThreadSafeHMODULE>> = OnceCell::new();
 
 pub unsafe fn cleanup_resources() {
     unsafe {
+        if let Some(Some(hmodule)) = HMODULE.get() {
+            println!("we can unload!");
+            FreeLibrary(hmodule.0);
+        }
         Sleep(3000);
         FreeConsole().unwrap();
         MinHook::disable_all_hooks().unwrap();
@@ -23,7 +34,7 @@ pub unsafe fn cleanup_resources() {
 #[allow(non_snake_case)]
 #[unsafe(no_mangle)]
 pub unsafe extern "system" fn DllMain(
-    _hInstDll: HINSTANCE,
+    _hInstDll: HMODULE,
     fdwReason: u32,
     _lpvReserved: *mut c_void,
 ) -> BOOL {
@@ -46,10 +57,13 @@ pub unsafe extern "system" fn DllMain(
 
             let result = MinHook::enable_all_hooks();
             println!("MinHook::enable_all_hooks result: {:?}", result);
+
+            if HMODULE.get().is_none() {
+                HMODULE.set(Some(ThreadSafeHMODULE(_hInstDll))).unwrap();
+            }
         }
         DLL_PROCESS_DETACH => {
-            cleanup_resources();
-            println!("DLL detached");
+            println!("DLL detached meeow");
         }
         _ => {}
     }
