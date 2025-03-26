@@ -1,6 +1,8 @@
 # Discord Overlay DirectX11 ImGUI hook
 A PoC internal DirectX 11 hook which using Discord overlay to render ImGUI menu. 
 
+For egui version check egui branch of this project
+
 It is based on the [ynuwenhof's imferris DirectX hook](https://github.com/ynuwenhof/imferris)
 
 # Notes
